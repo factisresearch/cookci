@@ -1,0 +1,35 @@
+name:                cookci
+version:             0.1.0.0
+synopsis:            A simple CI tool
+description:         A tool that automatically builds repository-states from a http source and reports back to it
+license:             MIT
+license-file:        LICENSE
+author:              Alexander Thiemann
+maintainer:          thiemann@cp-med.com
+copyright:           (c) 2014 factis research GmbH
+category:            Development
+build-type:          Simple
+homepage:            https://github.com/factisresearch/cookci
+bug-reports:         https://github.com/factisresearch/cookci/issues
+cabal-version:       >=1.8
+
+executable cookci
+  main-is:             Main.hs
+  other-modules:       Cook.Ci.ArgParse, Cook.Ci.Types, Cook.Ci.Core
+  build-depends:       base >=4.6 && <4.8,
+                       optparse-applicative >=0.8 && <0.9,
+                       process >=1.1 && <1.2,
+                       text >=1.1 && <1.2,
+                       wreq >=0.2 && <0.3,
+                       aeson >=0.7 && <0.9,
+                       stm >=2.3 && <2.5,
+                       lens >=4.0 && <4.5,
+                       bytestring >=0.10 && <0.11,
+                       process >=1.0 && <1.3,
+                       temporary >=1.0 && <1.3
+  hs-source-dirs:      src/
+  ghc-options: -Wall -fno-warn-orphans -fno-warn-missing-signatures
+
+source-repository head
+  type:     git
+  location: git://github.com/factisresearch/cookci.git
