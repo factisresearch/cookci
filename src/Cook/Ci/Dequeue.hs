@@ -13,9 +13,11 @@ import Control.Monad
 import Cook.Ci.Types
 import Data.Aeson
 import Data.List
+import Data.Maybe
 import Data.Ord
 import Network.Wreq hiding (delete)
 import Test.Framework
+import System.Timeout
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Text as T
 
@@ -71,18 +73,20 @@ launchDequeue' dequeueIf ciState cfg jobHandler =
           where
             finallyHandler res =
                 do atomically $ modifyTVar' (cs_processing ciState) (delete jobId)
+                   putStrLn $ "Finished working on " ++ (T.unpack $ unJobId jobId)
                    case res of
                      Left (e :: SomeException) ->
                          putStrLn $ "Uncaught exception: " ++ show e
                      Right _ ->
                          return ()
-
             jobId = j_id job
             realWork =
-                do (jobOk, jobLog) <-
+                do mResult <-
+                       timeout (1000000 * (c_taskTimeoutSec cfg)) $
                        jobHandler job `catch` \(e :: SomeException) ->
-                           return (False, T.pack $ "Worker error: " ++ show e)
-                   let jobSt = JobState jobId jobOk jobLog
+                           return $ (False, T.pack $ "Worker error: " ++ show e)
+                   let (jobOk, jobLog) = fromMaybe (False, "Job timed out.") mResult
+                       jobSt = JobState jobId jobOk jobLog
                    (di_callbackHook dequeueIf) jobSt
       wait :: IO ()
       wait =
@@ -102,8 +106,9 @@ test_launchDequeue =
        finalState <-
            atomically $
              do openTasks <- readTVar dummyTasks
-                unless (null openTasks) retry
-                readTVar finishedJobs
+                closedTasks <- readTVar finishedJobs
+                when ((not $ null openTasks) || length closedTasks /= (length initialJobs)) retry
+                return closedTasks
        killThread tid
        assertEqual (jobSort initialJobs) (jobSort finalState)
     where
@@ -113,10 +118,12 @@ test_launchDequeue =
           , c_pollIntervalSec = 0
           , c_callbackUrl = CallbackUrl "non"
           , c_workers = 4
+          , c_taskTimeoutSec = 1
           }
       jobHandler finishedJobs job =
           do atomically $ modifyTVar' finishedJobs (job:)
              when (job == mkJob 50) $ fail "Oooops!"
+             when (job == mkJob 70) $ threadDelay (1000000 * 60)
              return (True, "Foo!")
       mkJob :: Int -> Job
       mkJob i =

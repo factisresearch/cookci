@@ -24,6 +24,7 @@ data Config
    , c_pollIntervalSec :: Int
    , c_callbackUrl :: CallbackUrl
    , c_workers :: Int
+   , c_taskTimeoutSec :: Int
    }
 
 newtype JobId
