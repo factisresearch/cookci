@@ -6,8 +6,6 @@ import Cook.Ci.Dequeue
 import Cook.Ci.Process
 import Cook.Ci.Types
 
-import Control.Applicative
-import Control.Concurrent.STM
 import System.Exit
 import System.IO
 import System.IO.Temp
@@ -19,10 +17,9 @@ import qualified System.Process as P
 
 runCore :: Config -> IO ()
 runCore cfg =
-    do st <- CiState <$> newTVarIO []
-       launchDequeue st cfg $ \(Job _ downloadUrl) ->
-           withSystemTempDirectory "cookciXXXX" $ \tempDir ->
-           withSystemTempFile "cooktarXXXX" $ \tarFp tarHdl ->
+    launchDequeue cfg $ \(Job _ downloadUrl) ->
+        withSystemTempDirectory "cookciXXXX" $ \tempDir ->
+        withSystemTempFile "cooktarXXXX" $ \tarFp tarHdl ->
            do hClose tarHdl
               tarBsl <- downloadBinary downloadUrl
               BSL.writeFile tarFp tarBsl

@@ -28,16 +28,17 @@ data Config
 
 newtype JobId
     = JobId { unJobId :: T.Text }
-    deriving (Show, Eq)
+    deriving (Show, Eq, Ord)
 
 newtype DownloadUrl
     = DownloadUrl { unDownloadUrl :: T.Text }
+    deriving (Show, Eq)
 
 data Job
    = Job
    { j_id :: JobId
    , j_downloadUrl :: DownloadUrl
-   }
+   } deriving (Show, Eq)
 
 data JobState
    = JobState
