@@ -1,0 +1,19 @@
+BASE COOK base-deps.cook
+INCLUDE cook.cabal
+INCLUDE Setup.hs
+INCLUDE LICENSE
+INCLUDE src/*
+UNPACK /apps/cookci
+
+WORKDIR /apps/cookci
+
+RUN cabal configure
+RUN cabal install
+
+RUN mv dist/build/cookci/cookci /usr/bin/cookci
+RUN chmod +x /usr/bin/cookci
+
+RUN adduser cookci
+USER cookci
+
+ENTRYPOINT ["cookci"]

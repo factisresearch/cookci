@@ -1,0 +1,28 @@
+BASE DOCKER agrafix/ghc7.6
+
+# Generate locale
+RUN locale-gen en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+# install docker
+RUN apt-get update && apt-get install -y docker.io
+RUN ln -sf /usr/bin/docker.io /usr/local/bin/docker
+RUN sed -i '$acomplete -F _docker docker' /etc/bash_completion.d/docker.io
+
+# generate .cabal/config
+RUN cabal update
+RUN cabal install -j8 temporary mtl
+
+# Install happy
+RUN wget -q http://hackage.haskell.org/package/happy-1.19.3/happy-1.19.3.tar.gz
+RUN tar xzvf happy-1.19.3.tar.gz
+RUN cd happy-1.19.3 && cabal install -j8
+RUN rm -rf happy-1.19.3*
+
+# Install alex
+RUN wget -q http://hackage.haskell.org/package/alex-3.1.3/alex-3.1.3.tar.gz
+RUN tar xzvf alex-3.1.3.tar.gz
+RUN cd alex-3.1.3 && cabal install -j8
+RUN rm -rf alex-3.1.3*
+
+RUN cabal install -j8 haskell-src-exts

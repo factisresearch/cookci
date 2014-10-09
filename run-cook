@@ -1,0 +1,2 @@
+#!/bin/bash
+dockercook cook -d . -b cook cookci.cook

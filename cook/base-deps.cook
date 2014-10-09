@@ -1,0 +1,8 @@
+BASE COOK root.cook
+INCLUDE cookci.cabal
+UNPACK /apps/cookci
+
+WORKDIR /apps/cookci
+
+# install local deps
+RUN cabal update && cabal install -j8 --only-dependencies
